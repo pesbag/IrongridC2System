@@ -35,7 +35,7 @@ public class IronGridDbContext:DbContext
             .WithMany(a => a.assets)
             .HasForeignKey(a => a.UnitId)
             .OnDelete(DeleteBehavior.Restrict);
-
+       
         modelBuilder.Entity<Asset>()
             .HasOne(a => a.assetLive)
             .WithOne(a => a.Asset)
