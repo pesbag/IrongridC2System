@@ -24,107 +24,97 @@ public class ConsumerServices
 
             if (report.AssetType == "UAV")
             {
-                var RowToSave = await _context.AssetLiveStatuses.FindAsync(report.AssetId);
+                var RowToSave = await _context.AssetLiveStatus.FindAsync(report.AssetId);
+                var NewReport = new AssetLiveStatus
+                {
+                    AssetId = report.AssetId,
+                    AssetType = report.AssetType,
+                    RawValue = report.RawValue,
+                    ProcessedStatus = "Warning",
+                    IsVerified = false,
+                    LastUpdate = DateTime.UtcNow
+                };
 
-                if (report.RawValue.CompareTo("100") > 0 || report.RawValue.CompareTo("0") < 0)
+                bool success = int.TryParse(report.RawValue, out int result);
+                if (success == true) 
                 {
-                    if (RowToSave is not null)
+                    if (result < 0 || result > 100)
                     {
-                        RowToSave.ProcessedStatus = "Warning";
-                        RowToSave.IsVerified = false;
-                        await _context.SaveChangesAsync();
-                        return true;
-                    }
-                    else
-                    {
-                        var NewReport = new AssetLiveStatus
+                        if(RowToSave is not null)
                         {
-                            AssetId = report.AssetId,
-                            AssetType = report.AssetType,
-                            RawValue = report.RawValue,
-                            ProcessedStatus = "Warning",
-                            IsVerified = false,
-                            LastUpdate = report.Timestamp
-                        };
-                        await _context.AssetLiveStatuses.AddAsync(NewReport);
-                        await _context.SaveChangesAsync();
-                        return true;
+                            RowToSave.ProcessedStatus = "Warning";
+                            await _context.SaveChangesAsync();
+                            return true;
+                        }
+                        else
+                        {
+                            await _context.AssetLiveStatus.AddAsync(NewReport);
+                            await _context.SaveChangesAsync();
+                            return true;
+                        }
                     }
-                }
 
-                if (report.RawValue.CompareTo("100") < 0 || report.RawValue.CompareTo("20") < 0)
-                {
-                    if (RowToSave is not null)
+                    else if (result<=100 && result>=20)
                     {
-                        RowToSave.ProcessedStatus = "Stable";
-                        RowToSave.IsVerified = true;
-                        await _context.SaveChangesAsync();
-                        return true;
+                        if (RowToSave is not null)
+                        {
+                            RowToSave.ProcessedStatus = "Stable";
+                            RowToSave.IsVerified = true;
+                            await _context.SaveChangesAsync();
+                            return true;
+                        }
+                        else
+                        {
+                            NewReport.ProcessedStatus = "Stable";
+                            NewReport.IsVerified = true;
+                            await _context.AssetLiveStatus.AddAsync(NewReport);
+                            await _context.SaveChangesAsync();
+                            return true;
+                        }
                     }
                     else
                     {
-                        var NewReport = new AssetLiveStatus
+                        if (RowToSave is not null)
                         {
-                            AssetId = report.AssetId,
-                            AssetType = report.AssetType,
-                            RawValue = report.RawValue,
-                            ProcessedStatus = "Stable",
-                            IsVerified = true,
-                            LastUpdate = report.Timestamp
-                        };
-                        await _context.AssetLiveStatuses.AddAsync(NewReport);
-                        await _context.SaveChangesAsync();
-                        return true;
-                    }
-                }
-                else
-                {
-                    if (RowToSave is not null)
-                    {
-                        RowToSave.ProcessedStatus = "Warning";
-                        RowToSave.IsVerified = true;
-                        await _context.SaveChangesAsync();
-                        return true;
-                    }
-                    else
-                    {
-                        var NewReport = new AssetLiveStatus
+                            RowToSave.ProcessedStatus = "Warning";
+                            RowToSave.IsVerified = true;
+                            await _context.SaveChangesAsync();
+                            return true;
+                        }
+                        else
                         {
-                            AssetId = report.AssetId,
-                            AssetType = report.AssetType,
-                            RawValue = report.RawValue,
-                            ProcessedStatus = "Warning",
-                            IsVerified = true,
-                            LastUpdate = report.Timestamp
-                        };
-                        await _context.AssetLiveStatuses.AddAsync(NewReport);
-                        await _context.SaveChangesAsync();
-                        return true;
+                            NewReport.IsVerified = true;
+                            await _context.AssetLiveStatus.AddAsync(NewReport);
+                            await _context.SaveChangesAsync();
+                            return true;
+                        }
                     }
                 }
             }
         }
-
-        catch (DbUpdateException)
-        {
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error processing: {ex.Message}");
-            return false;
-        }
+        catch (DbUpdateException){  return true; }
+        catch (Exception ex) { Console.WriteLine($"Error processing: {ex.Message}");return false; }
         return true;
     }
-        public async Task<bool> ProcessPerimeterSensorModelAsync(string JsonMessage)
+    public async Task<bool> ProcessPerimeterSensorModelAsync(string JsonMessage)
+    {
+        try
         {
-           try
-               {
             var report = JsonSerializer.Deserialize<Report>(JsonMessage);
             if (report is null) { return false; }
-            else if (report.AssetType == "PerimeterSensor")
+            var NewReport = new AssetLiveStatus
             {
-                var RowToSave = await _context.AssetLiveStatuses.FindAsync(report.AssetId);
+                AssetId = report.AssetId,
+                AssetType = report.AssetType,
+                RawValue = report.RawValue,
+                ProcessedStatus = "Warning",
+                IsVerified = false,
+                LastUpdate = DateTime.UtcNow
+            };
+
+            if (report.AssetType == "PerimeterSensor")
+            {
+                var RowToSave = await _context.AssetLiveStatus.FindAsync(report.AssetId);
                 string[] OptionalGood = ["Good", "GOOD", "good", "gud"];
                 string[] OptionlBad = ["Bad", "BAD", "bad", "bed"];
                 if (RowToSave is not null)
@@ -137,7 +127,7 @@ public class ConsumerServices
                         await _context.SaveChangesAsync();
                         return true;
                     }
-                    if (OptionlBad.Contains(RowToSave.RawValue))
+                    else if (OptionlBad.Contains(RowToSave.RawValue))
                     {
                         RowToSave.ProcessedStatus = "Warning";
                         RowToSave.RawValue = "Bad";
@@ -158,48 +148,30 @@ public class ConsumerServices
                 {
                     if (OptionalGood.Contains(RowToSave.RawValue))
                     {
-                        var NewReport = new AssetLiveStatus
-                        {
-                            AssetId = report.AssetId,
-                            AssetType = report.AssetType,
-                            RawValue = "Good",
-                            ProcessedStatus = "Stable",
-                            IsVerified = true,
-                            LastUpdate = report.Timestamp
-                        };
-                        await _context.AssetLiveStatuses.AddAsync(NewReport);
+                        NewReport.RawValue = "Good";
+                        NewReport.ProcessedStatus = "Stable";
+                        NewReport.IsVerified = true;
+                            
+                        await _context.AssetLiveStatus.AddAsync(NewReport);
                         await _context.SaveChangesAsync();
                         return true;
                     }
 
                     if (OptionlBad.Contains(RowToSave.RawValue))
                     {
-                        var NewReport = new AssetLiveStatus
-                        {
-                            AssetId = report.AssetId,
-                            AssetType = report.AssetType,
-                            RawValue = "Bad",
-                            ProcessedStatus = "Warning",
-                            IsVerified = true,
-                            LastUpdate = report.Timestamp
-                        };
-                        await _context.AssetLiveStatuses.AddAsync(NewReport);
+
+                        NewReport.RawValue = "Bad";
+                        NewReport.ProcessedStatus = "Warning";
+                        NewReport.IsVerified = true;
+                        await _context.AssetLiveStatus.AddAsync(NewReport);
                         await _context.SaveChangesAsync();
                         return true;
                     }
-                } 
+                }
             }
         }
-        catch (DbUpdateException)
-        {
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error processing: {ex.Message}");
-            return false;
-        }
+        catch (DbUpdateException) { return true; }
+        catch (Exception ex) { Console.WriteLine($"Error processing: {ex.Message}"); return false; }
         return true;
     }
-   
 }

@@ -13,7 +13,7 @@ public class IronGridDbContext:DbContext
     public IronGridDbContext(DbContextOptions<IronGridDbContext> options) : base(options) { }
     public DbSet<Asset> Assets { get; set; }
     public DbSet<Unit> Units { get; set; }
-    public DbSet<AssetLiveStatus> AssetLiveStatuses { get; set; }
+    public DbSet<AssetLiveStatus> AssetLiveStatus { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -28,6 +28,11 @@ public class IronGridDbContext:DbContext
         {
             entity.HasKey(c => c.Id);
             entity.Property(c => c.Id).ValueGeneratedNever();
+        });
+        modelBuilder.Entity<AssetLiveStatus>(entity =>
+        {
+            entity.HasKey(c => c.AssetId);
+            entity.Property(c => c.AssetId).ValueGeneratedNever();
         });
 
         modelBuilder.Entity<Asset>()
