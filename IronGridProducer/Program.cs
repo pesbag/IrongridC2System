@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text.Json;
+﻿using System.Text.Json;
 using IronGridProducer.IronGridServices;
 using Microsoft.Extensions.Configuration;
 
@@ -9,8 +8,10 @@ var config = new ConfigurationBuilder()
     .Build();
 
 string bootstrapServices = config["Kafka:BootstrapServices"]!;
+
 string PerimeterSensorTopic = config["Kafka:Topics:PerimeterSensor"]!;
 string UavTopic = config["Kafka:Topics:UAV"]!;
+
 string ReportsPath = "Data/field_reports.json";
 
 string ReportsJsonContent = File.ReadAllText(ReportsPath);
@@ -26,12 +27,17 @@ static List<string> GetListOfData(string content)
     }
     return outputList;
 }
+
 List<string> ReportsList = GetListOfData(ReportsJsonContent);
+
 var producer = new KafkaProducerServices(bootstrapServices);
+
 Console.WriteLine($"loaded {ReportsList.Count} rows from {ReportsPath}");
+
 int LentghOfData = ReportsList.Count();
 int UavCounter= 0;
 int PerimeterSensorCouner = 0;
+
 for(int i = 0; i<LentghOfData; i++)
 {
     if (ReportsList[i].Contains("UAV"))
