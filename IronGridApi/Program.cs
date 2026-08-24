@@ -16,6 +16,9 @@ builder.Services.AddDbContext<IronGridDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
 ); 
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
+builder.Services.AddScoped<ICriticalAssetRepository, CriticalAssetRepository>();
+builder.Services.AddScoped<IAssetsStatusRepository, AssetsStatusRepository>();
+
 
 var app = builder.Build();
 
