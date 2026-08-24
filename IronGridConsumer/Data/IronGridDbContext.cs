@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using IronGridConsumer.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions;
 namespace IronGridConsumer.Data;
 
 public class IronGridDbContext:DbContext
@@ -44,8 +41,6 @@ public class IronGridDbContext:DbContext
         modelBuilder.Entity<Asset>()
             .HasOne(a => a.assetLive)
             .WithOne(a => a.Asset)
-            .HasForeignKey<AssetLiveStatus>();
-
-       
+            .HasForeignKey<AssetLiveStatus>();  
     }
 }

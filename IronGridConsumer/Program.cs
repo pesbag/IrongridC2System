@@ -49,7 +49,7 @@ finally
 
 async Task ConsumeTopicAsync(string topic)
 {
-    Console.WriteLine($"\nSubscribed to: {topic}");
+    Console.WriteLine($"\n subscribed to: {topic}");
     consumer.Subscribe(topic);
 
     int emptyReads = 0;
@@ -79,19 +79,19 @@ async Task ConsumeTopicAsync(string topic)
             {
                 isSuccess = await service.ProcessUAVModelAsync(result.Message.Value);
             }
-
             if (isSuccess)
             {
                 consumer.Commit(result);
             }
         }
+
         catch (ConsumeException ex)
         {
-            Console.WriteLine($"Waiting: {ex.Error.Reason}");
+            Console.WriteLine($"waiting: {ex.Error.Reason}");
             await Task.Delay(1000);
         }
     }
 
     consumer.Unsubscribe();
-    Console.WriteLine($"Finished topic: {topic}");
+    Console.WriteLine($"finished topic: {topic}");
 }
