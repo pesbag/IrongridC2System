@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="../IronGridApi/IronGridApi.csproj" Id="1c10f46d-16cf-40f9-aa54-7955e01537a3" />
   <Project Path="../IronGridConsumer/IronGridConsumer.csproj" Id="057dbac6-7004-416a-9049-917daa1ed039" />
   <Project Path="IronGridProducer.csproj" />
 </Solution>
